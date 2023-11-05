@@ -1,4 +1,6 @@
 <template>
+
+
   <div>
     <!-- Hide By status Bar -->
     <div class="hideBar">
@@ -99,6 +101,10 @@
           </template>
         </template>
       </tbody>
+      <p>
+          <button @click="prevPage">Previous</button> 
+          <button @click="nextPage">Next</button>
+        </p>
     </table>
     <!-- End of Table Design -->
   </div>
@@ -107,14 +113,27 @@
 
 <script>
 import data from "../assets/data.json";
+
 export default {
+  components:{
+   
+  },
   data: function () {
     return {
       hidestatus: [],
       allCheckBox: [],
       UIData: [],
+      sliced_data:[],
       wwInfo: {},
       allCheck: false,
+      selectedList: [],            // Your full list of items
+      itemsPerPage: 100,    // Number of items per page  
+      perPage: 100,
+      pageSize:3,
+      currentPage: 1,
+      
+      
+    
     };
   },
   mounted() {
@@ -122,13 +141,21 @@ export default {
     this.wwInfo = this.getWWFromDate();
   },
   computed: {
+    
     wwData() {
       return `${this.wwInfo.year}WW${this.wwInfo.workweek}.${this.wwInfo.numofday}`;
     },
 
     productDataBystatus() {
       let tmp = {};
-      let data = this.UIData;
+      const startIndex = (this.currentPage - 1) * this.perPage;
+      const endIndex = startIndex + this.perPage;
+      let sliced_data = this.UIData.slice(startIndex, endIndex)
+      
+      let data = sliced_data;
+
+      // let data = this.UIData;
+      // console.log(data)
       let statusSet = new Set();
 
       data.forEach((element) => {
@@ -150,11 +177,14 @@ export default {
       const sortedStringsArray = [...strings].sort();
       statusSet = new Set(sortedStringsArray);
 
+
       return {
         status: [...statusSet],
         data: tmp,
+
       };
     },
+
   },
   methods: {
     calstatusRowspan(data) {
@@ -194,7 +224,15 @@ export default {
         this.allCheckBox = [];
       }
     },
-  },
+
+    nextPage() {
+      let total_length = Object.keys(data).length + 1
+      if((this.currentPage*this.perPage) < total_length) this.currentPage++;
+    },
+    prevPage() {
+      if(this.currentPage > 1) this.currentPage--;
+    }
+    },
 };
 </script>
 

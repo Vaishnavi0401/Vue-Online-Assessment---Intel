@@ -4,7 +4,6 @@ import TheTable from "./components/table.vue";
 
 <template>
   <div id="app">
-    Hello
     <TheTable />
   </div>
 </template>
