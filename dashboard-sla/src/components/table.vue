@@ -1,12 +1,14 @@
 <template>
 
 
-  <div>
+  <div class = "Table-Wrapper">
     <!-- Hide By status Bar -->
+    <div class="HeadingDetails">
     <div class="hideBar">
       <label class="hideLabel"> Hide: </label>
       <div class="checkbox">
         <!-- All status -->
+        <div class="AllStatusCheckbox">
         <input
           :id="productDataBystatus.status"
           type="checkbox"
@@ -16,6 +18,7 @@
           v-model="hidestatus"
         />
         <label :for="productDataBystatus.status">All statuses</label>
+        </div>
 
         <!-- Dynamic status -->
         <div class="styled-checkboxes" v-for="status in ['Announced', 'Launched', 'Discontinued', 'Launched (with IPU)']" :key="`${status}`">
@@ -23,6 +26,7 @@
             :id="`${status}`"
             type="checkbox"
             class="styled"
+            @click="firstpage"
             :value="status"
             v-model="hidestatus"
           />
@@ -31,9 +35,21 @@
              </label>
         
         </div>
+       
       </div>
+       
     </div>
-
+    <div class="styled-pagination">
+          <button class="styled-button" @click="firstpage">1</button>
+          <button class="styled-button" @click="prevPage">&lt</button> 
+          <button class="styled-button" @click="nextPage">></button>   
+          <button class="styled-button" @click="lastPage">>></button>
+    </div>
+    </div>
+    <div class="form">
+      <label class="search-label">Search:</label>
+      <input v-model="searchTerm" class="search-input"/>
+    </div>
     <!-- Main Table Design -->
     <table>
       <thead>
@@ -102,10 +118,7 @@
           </template>
         </template>
       </tbody>
-      <p>
-          <button class="styled-button" @click="prevPage">Previous</button> 
-          <button class="styled-button" @click="nextPage">Next</button>
-        </p>
+     
     </table>
     <!-- End of Table Design -->
   </div>
@@ -133,9 +146,7 @@ export default {
       pageSize:3,
       currentPage: 1,
       count : 0 ,
-      strippedTr: {
-            // 'background-color': '#f9f9f9'
-        }
+      searchTerm:""
     
     };
   },
@@ -153,20 +164,32 @@ export default {
       let tmp = {};
       const startIndex = (this.currentPage - 1) * this.perPage;
       const endIndex = startIndex + this.perPage;
-      
+     
       // let data = this.UIData;
       let slice = [];
       let i = 0 
       
+      
       for (const c of this.UIData){
+        
+        if(!this.searchTerm){
+        
         if (!this.hidestatus.includes(c.Status)){
+          
           slice[i] = c
-          i+=1
-         
+          
+        }}
+        else if(c.Product.toLowerCase().includes(this.searchTerm.toLowerCase())){
+          
+          slice[i]=c;
         }
+        i+=1;
       }
+      
       let data = slice.slice(startIndex, endIndex)
-    
+     // sort status in order
+
+     
       let statusSet = new Set();
       let coreSet = new Set();
       data.forEach((element) => {
@@ -185,7 +208,6 @@ export default {
         tmp[status][cores].push(element);
       });
       
-      // sort status in order
       const strings = new Set(statusSet);
       const sortedStringsArray = [...strings].sort();
       statusSet = new Set(sortedStringsArray);
@@ -235,16 +257,22 @@ export default {
         this.hidestatus = [];
         this.allCheckBox = [];
       }
+      this.currentPage = 1
     },
-
+    firstpage(){
+      this.currentPage = 1
+    },
     nextPage() {
       let total_length = Object.keys(data).length + 1
       if((this.currentPage*this.perPage) < total_length) this.currentPage++;
-      this.count = 0 
+      // this.count = 0 
     },
     prevPage() {
       if(this.currentPage > 1) this.currentPage--;
-      this.count = 0 
+      // this.count = 0 
+    },
+    lastPage(){
+      this.currentPage = Math.floor(Object.keys(data).length/100)
     }
     },
 };
@@ -279,6 +307,9 @@ export default {
   gap: 15px;
 }
 
+.Table-Wrapper{
+padding: 10px 60px;
+}
 table {
   width: 100%;
   white-space: nowrap !important;
@@ -424,12 +455,27 @@ th {
   background-color: white;
 }
 
+.HeadingDetails{
+  display: flex;
+  justify-content: space-between;
+  /* padding-bottom: 30px; */
+}
 .checkbox {
   /* background-color: #4273DE; */
   /* color: #ccc; */
   display: flex;
-  padding-left: 30px;
+  /* padding-left: 30px; */
   
+}
+.hideLabel{
+  display: flex; /* Display checkboxes in a horizontal line */
+  padding: 10px; /*Add padding to the container*/
+  font-weight: 500;
+  font-size: large;
+}
+.AllStatusCheckbox{
+  display: flex; /* Display checkboxes in a horizontal line */
+  padding: 10px; /*Add padding to the container*/
 }
 .styled-checkboxes {
   display: flex; /* Display checkboxes in a horizontal line */
@@ -437,12 +483,14 @@ th {
 }
 .styled {
   display: none; /* Hide the default checkbox input */
-  padding: 10px;
+  /* padding: 50px; */
+
 }
 .styled + label {
   position: relative;
   padding-left: 30px; /* Add space for a custom checkbox */
   cursor: pointer;
+
 }
 
 .styled + label:before {
@@ -500,7 +548,11 @@ th {
   .status-Launched-with-IPU- {
     background-color: rgb(215, 183, 69);
   }
-
+.styled-pagination{
+   /* Display checkboxes in a horizontal line */
+  padding: 0px; /*Add padding to the container*/
+  justify-content: flex-end; /* Right-align the buttons */
+}
   .styled-button {
   background-color: #007bff; /* Button background color */
   color: #fff; /* Button text color */
@@ -511,8 +563,27 @@ th {
   font-size: 16px; /* Font size */
   margin: 5px; /* Margin around the buttons */
   transition: background-color 0.3s ease; /* Smooth background color transition */
+  top: 0px
 }
+
 .styled-button:hover {
   background-color: #0056b3; /* Button background color on hover */
+}
+.form{
+  font-family :system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  Padding: 10px
+}
+.search-label {
+  /* font-weight: bold; */
+  font-family :system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+
+  margin-right: 5px;
+}
+.search-input {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  width: 200px;
 }
 </style>
