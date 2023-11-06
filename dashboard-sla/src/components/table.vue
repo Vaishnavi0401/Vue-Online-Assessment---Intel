@@ -18,7 +18,7 @@
         <label :for="productDataBystatus.status">All statuses</label>
 
         <!-- Dynamic status -->
-        <div v-for="status in productDataBystatus.status" :key="`${status}`">
+        <div class="styled-checkboxes" v-for="status in ['Announced', 'Launched', 'Discontinued', 'Launched (with IPU)']" :key="`${status}`">
           <input
             :id="`${status}`"
             type="checkbox"
@@ -26,9 +26,10 @@
             :value="status"
             v-model="hidestatus"
           />
-          <label :for="`${status}`">
-            {{ status }}
-          </label>
+          <label :for="`${status}`"> 
+             {{ status }}
+             </label>
+        
         </div>
       </div>
     </div>
@@ -36,14 +37,14 @@
     <!-- Main Table Design -->
     <table>
       <thead>
-        <tr>
-          <td :colspan="12">Dashboard SLA</td>
+        <tr >
+          <td :colspan="12" class = "TableHeading">Dashboard SLA</td>
         </tr>
-        <tr>
+        <tr >
           <th colspan="3">{{ wwData }}</th>
           <th colspan="8">Product Info</th>
         </tr>
-        <tr>
+        <tr >
           <th>Status</th>
           <th>Cores</th>
           <th class="width1">Product</th>
@@ -57,7 +58,7 @@
         <template v-for="(data, status, index) in productDataBystatus.data">
           <!-- status -->
           <tr>
-            <td class="width1" :rowspan="calstatusRowspan(data)">
+            <td class="width1"  :class="`status-${status.replace(/[\s()]+/g, '-')}`" :rowspan="calstatusRowspan(data)">
               {{ status }}
             </td>
           </tr>
@@ -102,8 +103,8 @@
         </template>
       </tbody>
       <p>
-          <button @click="prevPage">Previous</button> 
-          <button @click="nextPage">Next</button>
+          <button class="styled-button" @click="prevPage">Previous</button> 
+          <button class="styled-button" @click="nextPage">Next</button>
         </p>
     </table>
     <!-- End of Table Design -->
@@ -131,8 +132,10 @@ export default {
       perPage: 100,
       pageSize:3,
       currentPage: 1,
-      
-      
+      count : 0 ,
+      strippedTr: {
+            // 'background-color': '#f9f9f9'
+        }
     
     };
   },
@@ -150,37 +153,46 @@ export default {
       let tmp = {};
       const startIndex = (this.currentPage - 1) * this.perPage;
       const endIndex = startIndex + this.perPage;
-      let sliced_data = this.UIData.slice(startIndex, endIndex)
       
-      let data = sliced_data;
-
       // let data = this.UIData;
-      // console.log(data)
+      let slice = [];
+      let i = 0 
+      
+      for (const c of this.UIData){
+        if (!this.hidestatus.includes(c.Status)){
+          slice[i] = c
+          i+=1
+         
+        }
+      }
+      let data = slice.slice(startIndex, endIndex)
+    
       let statusSet = new Set();
-
+      let coreSet = new Set();
       data.forEach((element) => {
         let status = element.Status;
         let cores = element.Cores;
 
         // push status to set
         statusSet.add(status);
-
+        coreSet.add(cores)
         if (this.hidestatus.includes(status)) return; // Hide by status
-        if (!tmp[status]) tmp[status] = {};
+        if (!tmp[status]) {
+          tmp[status] = {};
+          
+        }
         if (!tmp[status][cores]) tmp[status][cores] = [];
-
         tmp[status][cores].push(element);
       });
-
+      
       // sort status in order
       const strings = new Set(statusSet);
       const sortedStringsArray = [...strings].sort();
       statusSet = new Set(sortedStringsArray);
 
-
       return {
         status: [...statusSet],
-        data: tmp,
+        data: tmp
 
       };
     },
@@ -228,9 +240,11 @@ export default {
     nextPage() {
       let total_length = Object.keys(data).length + 1
       if((this.currentPage*this.perPage) < total_length) this.currentPage++;
+      this.count = 0 
     },
     prevPage() {
       if(this.currentPage > 1) this.currentPage--;
+      this.count = 0 
     }
     },
 };
@@ -268,10 +282,14 @@ export default {
 table {
   width: 100%;
   white-space: nowrap !important;
+  /* border-collapse: collapse; */
 }
 
 table td {
   position: relative;
+  background-color: #f2f2f2;
+  border: 1px solid #ccc;
+  
 }
 
 i {
@@ -358,13 +376,14 @@ select {
 table tr td:not(.skip),
 table tr th {
   text-align: center;
+  border: 1px solid #ccc;
 }
 
 td,
 th {
   padding: 2px !important;
   width: 100px;
-  border: 1px solid black;
+  /* border: 1px solid black; */
 }
 
 .reference {
@@ -395,6 +414,9 @@ th {
 .hideBar {
   list-style: none;
   display: flex;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  color: #192c55c2;
+  /* padding-left: 30px; */
 }
 
 .productColumn {
@@ -403,12 +425,47 @@ th {
 }
 
 .checkbox {
-  list-style: none;
+  /* background-color: #4273DE; */
+  /* color: #ccc; */
   display: flex;
+  padding-left: 30px;
+  
+}
+.styled-checkboxes {
+  display: flex; /* Display checkboxes in a horizontal line */
+  padding: 10px; /*Add padding to the container*/
+}
+.styled {
+  display: none; /* Hide the default checkbox input */
+  padding: 10px;
+}
+.styled + label {
+  position: relative;
+  padding-left: 30px; /* Add space for a custom checkbox */
+  cursor: pointer;
 }
 
-.checkbox label {
-  margin-left: 10px;
+.styled + label:before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #007bff; /* Checkbox border color */
+  background-color: #fff; /* Checkbox background color */
+}
+
+.styled:checked + label:before {
+  background-color: #007bff; /* Checked checkbox background color */
+}
+
+.styled:checked + label:after {
+  content: '✔'; /* Checkmark symbol */
+  position: absolute;
+  top: 1px;
+  left: 5px;
+  color: #fff; /* Checkmark color */
 }
 
 .redActual {
@@ -420,5 +477,42 @@ th {
 .width1 {
   width: 1%;
   /* white-space: nowrap !important; */
+}
+.TableHeading{
+
+  background:lightblue; 
+  border: 1px solid #ccc; 
+  font-family:\'Roboto\' ;
+  font-size: 40px;
+}
+.status-Announced {
+    background-color: lightgreen;
+  }
+
+  .status-Launched {
+    background-color: lightblue;
+  }
+
+  .status-Discontinued {
+    background-color: lightcoral;
+    
+  }
+  .status-Launched-with-IPU- {
+    background-color: rgb(215, 183, 69);
+  }
+
+  .styled-button {
+  background-color: #007bff; /* Button background color */
+  color: #fff; /* Button text color */
+  padding: 10px 20px; /* Padding around the text */
+  border: none; /* Remove the button border */
+  border-radius: 5px; /* Rounded corners */
+  cursor: pointer; /* Show a hand cursor on hover */
+  font-size: 16px; /* Font size */
+  margin: 5px; /* Margin around the buttons */
+  transition: background-color 0.3s ease; /* Smooth background color transition */
+}
+.styled-button:hover {
+  background-color: #0056b3; /* Button background color on hover */
 }
 </style>
