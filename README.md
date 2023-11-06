@@ -4,7 +4,7 @@ Intel Online Assessment
 
 Tasks Completion 
 
-Initial Setup 
+      A. Initial Setup 
 Installed VS Code, Node.js. 
 Cloned the github repo 
 On the terminal of the folder, installed npm 
